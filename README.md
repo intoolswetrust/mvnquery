@@ -7,6 +7,8 @@ The artifacts returned by the query are listed by default in format `groupId:art
 If you want to see the `lastModified` timestamp in the result use `-t` program parameter. Then the output format is
 `groupId:artifactId:version:packaging:classifier:lastModifiedTimestamp`
 
+The MvnQuery is based on [apache/maven-indexer](https://github.com/apache/maven-indexer/) project.
+
 ## Quickstart
 
 Print help.
