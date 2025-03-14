@@ -1,21 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package com.github.kwart.mvnquery;
 
 import static java.util.Objects.requireNonNull;
@@ -23,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,9 +66,17 @@ public class MvnQuery {
     private final IndexUpdater indexUpdater;
     private final Config config;
     private final DateTimeFormatter timestampFormatter;
+    private final PrintStream resultStream;
+    private final PrintStream infoStream;
 
     public MvnQuery(Config config) throws Exception {
+        this(config, System.out, System.err);
+    }
+
+    public MvnQuery(Config config, PrintStream resultStream, PrintStream infoStream) throws Exception {
         this.config = requireNonNull(config);
+        this.infoStream = requireNonNull(infoStream);
+        this.resultStream = requireNonNull(resultStream);
         String tf = config.getTimestampFormat();
         if (tf != null) {
             timestampFormatter = "ISO".equals(tf.toUpperCase(Locale.ROOT)) ? DateTimeFormatter.ISO_INSTANT
@@ -141,7 +132,7 @@ public class MvnQuery {
         long count = 0L;
         try (final IteratorSearchResponse response = indexer.searchIterator(request)) {
             for (ArtifactInfo ai : response) {
-                System.out.println(getCoordinates(ai));
+                resultStream.println(getCoordinates(ai));
                 count++;
             }
             long secondsDiff = Duration.between(searchStart, Instant.now()).getSeconds();
@@ -265,7 +256,7 @@ public class MvnQuery {
 
     private void log(String line) {
         if (!config.isQuiet()) {
-            System.err.println(line);
+            infoStream.println(line);
         }
     }
 

@@ -24,25 +24,44 @@ public class Config {
     private String artifactId;
 
     @Parameter(names = { "--packaging", "-p" }, description = "Filter by packaging type")
-    private String packaging = "jar";
+    private String packaging;
 
     @Parameter(names = { "--classifier", "-c" }, description = "Filter by classifier")
-    private String classifier = "-";
+    private String classifier;
 
     @Parameter(names = { "--lastDays", "-d" }, description = "Filter artifacts modified in last X days")
-    private int lastDays = 14;
+    private int lastDays;
 
     @Parameter(names = { "--config-data-dir" }, converter = FileConverter.class, description = "Set data directory for index")
-    private File configDataDir = new File(System.getProperty("user.home"), ".mvnquery");
+    private File configDataDir;
 
     @Parameter(names = { "--config-repo" }, description = "Set repository URL")
-    private String configRepo = "https://repo1.maven.org/maven2";
+    private String configRepo;
 
-    @Parameter(names = { "--use-timestamp", "-t" }, description = "Print also the lastModifiedTime")
+    @Parameter(names = { "--use-timestamp", "-t" }, description = "Include the lastModified field in query results")
     private boolean useTimestamp;
 
     @Parameter(names = { "--timestamp-format" }, description = "User defined format to print the lastModifiedTime ('iso', 'yyyyMMddHHmmssSSS', etc.) ")
     private String timestampFormat;
+
+    public Config() {
+        this(builder());
+    }
+
+    private Config(Builder builder) {
+        this.printHelp = builder.printHelp;
+        this.quiet = builder.quiet;
+        this.printVersion = builder.printVersion;
+        this.groupId = builder.groupId;
+        this.artifactId = builder.artifactId;
+        this.packaging = builder.packaging;
+        this.classifier = builder.classifier;
+        this.lastDays = builder.lastDays;
+        this.configDataDir = builder.configDataDir;
+        this.configRepo = builder.configRepo;
+        this.useTimestamp = builder.useTimestamp;
+        this.timestampFormat = builder.timestampFormat;
+    }
 
     public String getGroupId() {
         return groupId;
@@ -121,6 +140,92 @@ public class Config {
                 + ", artifactId=" + artifactId + ", packaging=" + packaging + ", classifier=" + classifier + ", lastDays="
                 + lastDays + ", configDataDir=" + configDataDir + ", configRepo=" + configRepo + ", useTimestamp="
                 + useTimestamp + ", timestampFormat=" + timestampFormat + "]";
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private boolean printHelp;
+        private boolean quiet;
+        private boolean printVersion;
+        private String groupId;
+        private String artifactId;
+        private String packaging = "jar";
+        private String classifier = "-";
+        private int lastDays = 14;
+        private File configDataDir = new File(System.getProperty("user.home"), ".mvnquery");
+        private String configRepo = "https://repo1.maven.org/maven2";
+        private boolean useTimestamp;
+        private String timestampFormat;
+
+        private Builder() {
+        }
+
+        public Builder withPrintHelp(boolean printHelp) {
+            this.printHelp = printHelp;
+            return this;
+        }
+
+        public Builder withQuiet(boolean quiet) {
+            this.quiet = quiet;
+            return this;
+        }
+
+        public Builder withPrintVersion(boolean printVersion) {
+            this.printVersion = printVersion;
+            return this;
+        }
+
+        public Builder withGroupId(String groupId) {
+            this.groupId = groupId;
+            return this;
+        }
+
+        public Builder withArtifactId(String artifactId) {
+            this.artifactId = artifactId;
+            return this;
+        }
+
+        public Builder withPackaging(String packaging) {
+            this.packaging = packaging;
+            return this;
+        }
+
+        public Builder withClassifier(String classifier) {
+            this.classifier = classifier;
+            return this;
+        }
+
+        public Builder withLastDays(int lastDays) {
+            this.lastDays = lastDays;
+            return this;
+        }
+
+        public Builder withConfigDataDir(File configDataDir) {
+            this.configDataDir = configDataDir;
+            return this;
+        }
+
+        public Builder withConfigRepo(String configRepo) {
+            this.configRepo = configRepo;
+            return this;
+        }
+
+        public Builder withUseTimestamp(boolean useTimestamp) {
+            this.useTimestamp = useTimestamp;
+            return this;
+        }
+
+        public Builder withTimestampFormat(String timestampFormat) {
+            this.timestampFormat = timestampFormat;
+            return this;
+        }
+
+        public Config build() {
+            return new Config(this);
+        }
     }
 
 }
