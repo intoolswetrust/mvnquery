@@ -246,7 +246,7 @@
                         </executions>
                         <configuration>
                             <doclint>none</doclint>
-                            <additionalOptions>--add-modules java.net.http,java.logging</additionalOptions>
+                            <legacyMode>true</legacyMode>
                         </configuration>
                     </plugin>
                     <plugin>
