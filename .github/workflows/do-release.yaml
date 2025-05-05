@@ -60,3 +60,20 @@ jobs:
         file_glob: true
         tag:   ${{ steps.maven_release.outputs.TAG }}
         overwrite: true
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Docker Build and Push the snapshot image
+      run: docker buildx build --push -f Dockerfile --tag kwart/mvnquery:${{ github.event.inputs.release-version }} .
+
+    - name: Update Docker description
+      uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: kwart/mvnquery
+        readme-filepath: ./README-docker.md
