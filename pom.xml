@@ -174,9 +174,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/intoolswetrust/mvnquery.git</connection>
-        <developerConnection>scm:git:git@github.com:intoolswetrust/mvnquery.git</developerConnection>
-        <url>http://github.com/intoolswetrust/mvnquery/</url>
+        <connection>scm:git:https://github.com/intoolswetrust/mvnquery.git</connection>
+        <url>https://github.com/intoolswetrust/mvnquery/</url>
         <tag>HEAD</tag>
     </scm>
 

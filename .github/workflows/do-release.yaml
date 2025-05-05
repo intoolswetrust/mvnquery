@@ -10,6 +10,10 @@ on:
         description: 'Version to be set after the release - without the -SNAPSHOT suffix (e.g. 2.4.0).'
         required: true
 
+
+permissions:
+  contents: write
+
 env:
   GIT_AUTHOR_NAME: Flash Gordon
   GIT_AUTHOR_EMAIL: <>
@@ -40,18 +44,19 @@ jobs:
         NEXT_VERSION=${{ github.event.inputs.next-snapshot-version }}-SNAPSHOT
         TAG=mvnquery_${VERSION}
         set -x
-        mvn clean install
+        mvn --batch-mode clean install
         mvn -P release --batch-mode "-Dtag=${TAG}" release:prepare \
                  "-DreleaseVersion=${VERSION}" \
-                 "-DdevelopmentVersion=${NEXT_VERSION}"
+                 "-DdevelopmentVersion=${NEXT_VERSION}" -DskipTests
         mvn -P release --batch-mode release:perform \
-            -DstagingProgressTimeoutMinutes=30 -Dmaven.wagon.rto=7200000 \
+            -DskipTests -DstagingProgressTimeoutMinutes=30 -Dmaven.wagon.rto=7200000 \
             -Dmaven.wagon.httpconnectionManager.maxPerRoute=60 -Dmaven.wagon.httpconnectionManager.maxTotal=100
         echo "TAG=$TAG" >> $GITHUB_OUTPUT
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd
