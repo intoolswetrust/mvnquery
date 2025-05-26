@@ -41,8 +41,15 @@ public class Config {
     @Parameter(names = { "--use-timestamp", "-t" }, description = "Include the lastModified field in query results")
     private boolean useTimestamp;
 
-    @Parameter(names = { "--timestamp-format" }, description = "User defined format to print the lastModifiedTime ('iso', 'yyyyMMddHHmmssSSS', etc.) ")
+    @Parameter(names = {
+            "--timestamp-format" }, description = "User defined format to print the lastModifiedTime ('iso', 'yyyyMMddHHmmssSSS', etc.) ")
     private String timestampFormat;
+
+    @Parameter(names = "--skip-update", description = "Skip index update even if interval has passed")
+    private boolean skipUpdate;
+
+    @Parameter(names = "--force-update", description = "Force index update even if interval hasn't passed")
+    private boolean forceUpdate;
 
     public Config() {
         this(builder());
@@ -61,6 +68,8 @@ public class Config {
         this.configRepo = builder.configRepo;
         this.useTimestamp = builder.useTimestamp;
         this.timestampFormat = builder.timestampFormat;
+        this.skipUpdate = builder.skipUpdate;
+        this.forceUpdate = builder.forceUpdate;
     }
 
     public String getGroupId() {
@@ -111,10 +120,18 @@ public class Config {
         return timestampFormat;
     }
 
+    public boolean isSkipUpdate() {
+        return skipUpdate;
+    }
+
+    public boolean isForceUpdate() {
+        return forceUpdate;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(artifactId, classifier, configDataDir, configRepo, groupId, lastDays, packaging, printHelp,
-                printVersion, quiet, timestampFormat, useTimestamp);
+                printVersion, quiet, timestampFormat, useTimestamp, skipUpdate, forceUpdate);
     }
 
     @Override
@@ -131,7 +148,8 @@ public class Config {
                 && Objects.equals(groupId, other.groupId) && lastDays == other.lastDays
                 && Objects.equals(packaging, other.packaging) && printHelp == other.printHelp
                 && printVersion == other.printVersion && quiet == other.quiet
-                && Objects.equals(timestampFormat, other.timestampFormat) && useTimestamp == other.useTimestamp;
+                && Objects.equals(timestampFormat, other.timestampFormat) && useTimestamp == other.useTimestamp
+                && skipUpdate == other.skipUpdate && forceUpdate == other.forceUpdate;
     }
 
     @Override
@@ -139,7 +157,8 @@ public class Config {
         return "Config [printHelp=" + printHelp + ", quiet=" + quiet + ", printVersion=" + printVersion + ", groupId=" + groupId
                 + ", artifactId=" + artifactId + ", packaging=" + packaging + ", classifier=" + classifier + ", lastDays="
                 + lastDays + ", configDataDir=" + configDataDir + ", configRepo=" + configRepo + ", useTimestamp="
-                + useTimestamp + ", timestampFormat=" + timestampFormat + "]";
+                + useTimestamp + ", timestampFormat=" + timestampFormat + ", skipUpdate=" + skipUpdate + ", forceUpdate="
+                + forceUpdate + "]";
     }
 
     public static Builder builder() {
@@ -159,6 +178,8 @@ public class Config {
         private String configRepo = "https://repo1.maven.org/maven2";
         private boolean useTimestamp;
         private String timestampFormat;
+        private boolean skipUpdate;
+        private boolean forceUpdate;
 
         private Builder() {
         }
@@ -220,6 +241,16 @@ public class Config {
 
         public Builder withTimestampFormat(String timestampFormat) {
             this.timestampFormat = timestampFormat;
+            return this;
+        }
+
+        public Builder withSkipUpdate(boolean skipUpdate) {
+            this.skipUpdate = skipUpdate;
+            return this;
+        }
+
+        public Builder withForceUpdate(boolean forceUpdate) {
+            this.forceUpdate = forceUpdate;
             return this;
         }
 
