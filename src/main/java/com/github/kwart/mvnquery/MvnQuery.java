@@ -5,11 +5,11 @@ import static java.util.Objects.requireNonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
@@ -59,6 +59,12 @@ import com.google.inject.Injector;
  * https://stackoverflow.com/questions/5776519/how-to-parse-unzip-unpack-maven-repository-indexes-generated-by-nexus
  */
 public class MvnQuery {
+
+    private static final String PROP_LAST_UPDATE_TIMESTAMP = "last.update.timestamp";
+    private static final String PROP_UPDATE_INTERVAL_HOURS = "update.interval.hours";
+    private static final String PROP_REPOSITORY_URL = "repository.url";
+
+    private static final String FILENAME_INDEX_PROPERTIES = "index.properties";
 
     public static final String VERSION;
 
@@ -117,6 +123,7 @@ public class MvnQuery {
     }
 
     public void perform() throws IOException, InvalidVersionSpecificationException {
+        log("Use --quiet (-q) argument to supress the debug output. Use --help (-h) to print the help.\n");
         IndexingContext indexingContext = initIndexingContext();
         updateIndex(indexingContext);
         BooleanQuery query = buildQuery();
@@ -156,7 +163,8 @@ public class MvnQuery {
     }
 
     private String formatTimestamp(long timestamp) {
-        return timestampFormatter != null ? timestampFormatter.format(Instant.ofEpochMilli(timestamp)) : Long.toString(timestamp);
+        return timestampFormatter != null ? timestampFormatter.format(Instant.ofEpochMilli(timestamp))
+                : Long.toString(timestamp);
     }
 
     private BooleanQuery buildQuery() {
@@ -191,18 +199,61 @@ public class MvnQuery {
     }
 
     private void updateIndex(IndexingContext indexingContext) throws IOException {
-        // Update the index (incremental update will happen if this is not 1st run and files are not deleted)
-        // This whole block below should not be executed on every app start, but rather controlled by some configuration
-        // since this block will always emit at least one HTTP GET. Maven Central indexes are updated once a week, but
+        File repoDir = new File(config.getConfigDataDir(), hashRepo(config.getConfigRepo()));
+        Path propsPath = repoDir.toPath().resolve(FILENAME_INDEX_PROPERTIES);
+
+        Properties props = new Properties();
+        if (Files.exists(propsPath)) {
+            try (InputStream in = Files.newInputStream(propsPath)) {
+                props.load(in);
+            }
+        }
+
+        // Maven Central indexes are updated once a week, but
         // other index sources might have different index publishing frequency.
-        // Preferred frequency is once a week.
-        Instant updateStart = Instant.now();
+        // Let's default to a reasonable value.
+        long updateIntervalHours = 48;
+        if (props.containsKey(PROP_UPDATE_INTERVAL_HOURS)) {
+            try {
+                updateIntervalHours = Long.parseLong(props.getProperty(PROP_UPDATE_INTERVAL_HOURS));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        props.setProperty(PROP_UPDATE_INTERVAL_HOURS, Long.toString(updateIntervalHours));
+
+        Instant now = Instant.now();
+        Instant lastUpdate = null;
+        if (props.containsKey(PROP_LAST_UPDATE_TIMESTAMP)) {
+            try {
+                lastUpdate = Instant.ofEpochSecond(Long.parseLong(props.getProperty(PROP_LAST_UPDATE_TIMESTAMP)));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        boolean needsUpdate = true;
+
+        // When it's the first update or force flag is set, then always perform the update
+        if (!(config.isForceUpdate() || indexingContext.getTimestamp() == null)) {
+            if (config.isSkipUpdate()) {
+                needsUpdate = false;
+            } else if (lastUpdate != null) {
+                Instant nextAllowedUpdate = lastUpdate.plus(updateIntervalHours, ChronoUnit.HOURS);
+                needsUpdate = now.isAfter(nextAllowedUpdate);
+            }
+        }
+
+        if (!needsUpdate) {
+            log("Skipping index update (not needed or explicitly suppressed)");
+            return;
+        }
+
         log("Updating Index ...");
         log("\tThis might take a while on first run, so please be patient!");
 
         Date contextCurrentTimestamp = indexingContext.getTimestamp();
         IndexUpdateRequest updateRequest = new IndexUpdateRequest(indexingContext, new Java11HttpClient());
         IndexUpdateResult updateResult = indexUpdater.fetchAndUpdateIndex(updateRequest);
+
         if (updateResult.isFullUpdate()) {
             log("\tFull update happened!");
         } else {
@@ -214,7 +265,15 @@ public class MvnQuery {
                         + " period.");
             }
         }
-        log("\tFinished in " + Duration.between(updateStart, Instant.now()).getSeconds() + " sec");
+
+        props.setProperty(PROP_LAST_UPDATE_TIMESTAMP, Long.toString(now.getEpochSecond()));
+        props.setProperty(PROP_REPOSITORY_URL, config.getConfigRepo());
+
+        try (OutputStream out = Files.newOutputStream(propsPath)) {
+            props.store(out, "MvnQuery repository index properties");
+        }
+
+        log("\tFinished in " + Duration.between(now, Instant.now()).getSeconds() + " sec");
         log();
     }
 
@@ -229,18 +288,12 @@ public class MvnQuery {
             repoDir.mkdirs();
         }
 
-        Path repoUrlPath = repoDir.toPath().resolve("repo-url");
-        if (!Files.exists(repoUrlPath)) {
-            Files.writeString(repoUrlPath, configRepo, StandardOpenOption.CREATE);
-        }
         File cacheDir = new File(repoDir, "cache");
         File indexDir = new File(repoDir, "index");
 
-        // Use a custom creator which indexes lastModified ArtifactInfo value
         List<IndexCreator> indexers = new ArrayList<>();
         indexers.add(new CustomArtifactInfoIndexCreator());
 
-        // Create context for central repository index
         return indexer.createIndexingContext(repoHash, repoHash, cacheDir, indexDir, configRepo, null, true, true, indexers);
     }
 

@@ -15,7 +15,7 @@ Print help.
 
 ```bash
 $ java -jar target/mvnquery.jar --help
-MvnQuery version 1.0-SNAPSHOT
+MvnQuery version 1.0.0-SNAPSHOT
 MvnQuery retrieves Maven repository index and makes query on it.
 
 Usage:
@@ -33,6 +33,9 @@ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar [options]
     --config-repo
       Set repository URL
       Default: https://repo1.maven.org/maven2
+    --force-update
+      Force index update even if interval hasn't passed
+      Default: false
     --groupId, -g
       Filter by groupId
     --help, -h
@@ -46,11 +49,14 @@ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar [options]
     --quiet, -q
       Don't print progress
       Default: false
+    --skip-update
+      Skip index update even if interval has passed
+      Default: false
     --timestamp-format
       User defined format to print the lastModifiedTime ('iso',
       'yyyyMMddHHmmssSSS', etc.)
     --use-timestamp, -t
-      Print also the lastModifiedTime
+      Include the lastModified field in query results
       Default: false
     --version, -v
       Print version
