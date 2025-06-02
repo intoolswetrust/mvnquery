@@ -97,7 +97,7 @@
         <dependency>
             <groupId>org.apache.maven.indexer</groupId>
             <artifactId>indexer-core</artifactId>
-            <version>7.1.5</version>
+            <version>7.1.6</version>
         </dependency>
         <dependency>
             <groupId>com.beust</groupId>
