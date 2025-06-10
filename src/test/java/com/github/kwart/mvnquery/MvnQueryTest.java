@@ -21,7 +21,7 @@ class MvnQueryTest {
     void testPerform() throws Exception {
         Builder configBuilder = Config.builder().withConfigDataDir(tempDir.toFile())
                 .withConfigRepo("https://repository.jboss.org/nexus/content/repositories/thirdparty-releases").withLastDays(0)
-                .withSkipUpdate(true).withGroupId("apache-struts");
+                .withSkipUpdate(true).withGroupId("xalan").withArtifactId("xalan");
         Config config = configBuilder.build();
         try (ByteArrayOutputStream infoOS = new ByteArrayOutputStream();
                 ByteArrayOutputStream resultOS = new ByteArrayOutputStream();
@@ -35,15 +35,27 @@ class MvnQueryTest {
             Path propertyFile = repoDir.resolve("index.properties");
             assertThat(propertyFile).isNotEmptyFile();
             String info = infoOS.toString(UTF_8);
-            assertThat(info).isNotNull().contains("Full update happened!", "+g:apache-struts +p:jar -l:*");
+            assertThat(info).isNotNull().contains("Full update happened!", "+g:xalan +a:xalan +p:jar");
             String result = resultOS.toString(UTF_8);
-            assertThat(result).contains("apache-struts:struts:1.2.6:jar:");
+            assertThat(result).contains("xalan:xalan:2.7.1.jbossorg-6:jar:");
+            assertThat(result).contains("xalan:xalan:2.7.1.jbossorg-6:jar:sources");
             assertThat(result).doesNotContain("apache-bsf:bsf:2.4.0:jar:");
             assertThat(info).doesNotContain("Skipping index update");
+        }
+        config = configBuilder.withClassifier("").build();
+        try (ByteArrayOutputStream infoOS = new ByteArrayOutputStream();
+                ByteArrayOutputStream resultOS = new ByteArrayOutputStream();
+                PrintStream infoPS = new PrintStream(infoOS, true, UTF_8.name());
+                PrintStream resultPS = new PrintStream(resultOS, true, UTF_8.name())) {
+            MvnQuery mvnQuery = new MvnQuery(config, resultPS, infoPS);
             mvnQuery.perform();
-            info = infoOS.toString(UTF_8);
+            String result = resultOS.toString(UTF_8);
+            assertThat(result).contains("xalan:xalan:2.7.1.jbossorg-6:jar:");
+            assertThat(result).doesNotContain("xalan:xalan:2.7.1.jbossorg-6:jar:sources");
+            String info = infoOS.toString(UTF_8);
             assertThat(info).contains("Skipping index update");
         }
+
         config = configBuilder.withForceUpdate(true).build();
         try (ByteArrayOutputStream infoOS = new ByteArrayOutputStream();
                 ByteArrayOutputStream resultOS = new ByteArrayOutputStream();
