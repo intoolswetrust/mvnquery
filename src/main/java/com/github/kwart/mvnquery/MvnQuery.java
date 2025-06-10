@@ -174,10 +174,7 @@ public class MvnQuery {
         addToQuery(builder, MAVEN.GROUP_ID, config.getGroupId());
         addToQuery(builder, MAVEN.ARTIFACT_ID, config.getArtifactId());
         addToQuery(builder, MAVEN.PACKAGING, config.getPackaging());
-        if (!addToQuery(builder, MAVEN.CLASSIFIER, config.getClassifier()) && config.getClassifier() != null) {
-            builder.add(indexer.constructQuery(MAVEN.CLASSIFIER, new SourcedSearchExpression(Field.NOT_PRESENT)),
-                    Occur.MUST_NOT);
-        }
+        addToQuery(builder, MAVEN.CLASSIFIER, config.getClassifier());
 
         int lastDays = config.getLastDays();
         if (lastDays > 0) {
@@ -194,7 +191,12 @@ public class MvnQuery {
         if (null == val || "-".equals(val)) {
             return false;
         }
-        builder.add(indexer.constructQuery(field, new SourcedSearchExpression(val)), Occur.MUST);
+        if (val.isEmpty()) {
+            builder.add(indexer.constructQuery(field, new SourcedSearchExpression(Field.NOT_PRESENT)), Occur.MUST_NOT);
+        } else {
+            builder.add(indexer.constructQuery(field, new SourcedSearchExpression(val)), Occur.MUST);
+        }
+
         return true;
     }
 
