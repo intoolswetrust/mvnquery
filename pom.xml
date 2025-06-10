@@ -3,7 +3,7 @@
 
     <groupId>com.github.kwart.mvnquery</groupId>
     <artifactId>mvnquery</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
@@ -171,7 +171,7 @@
     <scm>
         <connection>scm:git:https://github.com/intoolswetrust/mvnquery.git</connection>
         <url>https://github.com/intoolswetrust/mvnquery/</url>
-        <tag>HEAD</tag>
+        <tag>mvnquery_0.3.0</tag>
     </scm>
 
     <distributionManagement>
