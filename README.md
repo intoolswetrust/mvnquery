@@ -14,8 +14,8 @@ The MvnQuery is based on [apache/maven-indexer](https://github.com/apache/maven-
 Print help.
 
 ```bash
-$ java -jar target/mvnquery.jar --help
-MvnQuery version 1.0.0-SNAPSHOT
+$ java -jar ~/tools/mvnquery.jar --help
+MvnQuery version 0.3.0
 MvnQuery retrieves Maven repository index and makes query on it.
 
 Usage:
@@ -29,7 +29,7 @@ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar [options]
       Default: -
     --config-data-dir
       Set data directory for index
-      Default: ${user.home}/.mvnquery
+      Default: /home/kwart/.mvnquery
     --config-repo
       Set repository URL
       Default: https://repo1.maven.org/maven2
@@ -53,7 +53,7 @@ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar [options]
       Skip index update even if interval has passed
       Default: false
     --timestamp-format
-      User defined format to print the lastModifiedTime ('iso',
+      User defined format to print the lastModifiedTime ('iso', 
       'yyyyMMddHHmmssSSS', etc.)
     --use-timestamp, -t
       Include the lastModified field in query results
@@ -63,43 +63,40 @@ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar [options]
       Default: false
 ```
 
-Run the default query (query `jar` artifacts, changed in the last 14 days, with empty classifier).
+Run the default query (query `jar` artifacts, changed in the last 14 days, with all classifiers).
 
 ```bash
 $ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar
 
-Initiating indexing context for https://repo1.maven.org/maven2
-        - repository index data location: /home/user/.mvnquery/nT1zvdLBhX
-Updating Index ...
-        This might take a while on first run, so please be patient!
-        No update needed, index is up to date!
-        Finished in 0 sec
+Use --quiet (-q) argument to supress the debug output. Use --help (-h) to print the help.
 
+Initiating indexing context for https://repo1.maven.org/maven2
+        - repository index data location: /home/kwart/.mvnquery/nT1zvdLBhX
+Skipping index update (not needed or explicitly suppressed)
 Building the query
-        +p:jar -l:* +m2:[1740592566516 TO 9223372036854775807]
+        +p:jar +m2:[1748346028323 TO 9223372036854775807]
 Querying index
 ------
-org.eclipse.pass:pass-notification-service:1.15.0:jar:
-org.eclipse.pass:pass-journal-loader-nih:1.15.0:jar:
-org.eclipse.pass:pass-grant-loader:1.15.0:jar:
-org.eclipse.pass:pass-data-client:1.15.0:jar:
-org.eclipse.pass:pass-core-usertoken:1.15.0:jar:
-org.eclipse.pass:pass-core-user-service:1.15.0:jar:
-org.eclipse.pass:pass-core-test-config:1.15.0:jar:
-org.eclipse.pass:pass-core-policy-service:1.15.0:jar:
-org.eclipse.pass:pass-core-object-service:1.15.0:jar:
-org.eclipse.pass:pass-core-metadataschema-service:1.15.0:jar:
+com.kylecorry.andromeda:core:14.3.0:jar:sources
+com.kylecorry.andromeda:core:14.3.0:jar:javadoc
+com.kylecorry.andromeda:connection:14.3.0:jar:sources
+com.kylecorry.andromeda:connection:14.3.0:jar:javadoc
+com.kylecorry.andromeda:compression:14.3.0:jar:sources
+com.kylecorry.andromeda:compression:14.3.0:jar:javadoc
+com.kylecorry.andromeda:clipboard:14.3.0:jar:sources
+com.kylecorry.andromeda:clipboard:14.3.0:jar:javadoc
+com.kylecorry.andromeda:canvas:14.3.0:jar:sources
 ...[cut]...
 ------
-Total response size: 48806
-Artifacts listed: 48806
-Query took 0 seconds
+Total response size: 123669
+Artifacts listed: 123669
+Query took 1 seconds
 ```
 
-Run query for specified artifact without limiting the modification timestamp. Don't print the debug output.
+Run query for specified artifact without limiting the modification timestamp and querying the empty classifier only. Don't print the debug output.
 
 ```bash
-$ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar --groupId com.hazelcast --artifactId hazelcast --lastDays 0 --quiet 
+$ java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar --groupId com.hazelcast --artifactId hazelcast --classifier '' --lastDays 0 --quiet 
 com.hazelcast:hazelcast:3.4.7:jar:
 com.hazelcast:hazelcast:3.7:jar:
 com.hazelcast:hazelcast:3.7-EA:jar:
@@ -115,8 +112,8 @@ Other.
 # Use wildcards
 java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar --artifactId '*hazelcast*' --lastDays 90
 
-# Use all the packaging and all the classifiers
-java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar --packaging - --classifier -
+# Use all the packaging and with the "sources" classifiers
+java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar --packaging - --classifier sources
 
 # Change index directory location
 java --enable-native-access=ALL-UNNAMED -jar mvnquery.jar --config-data-dir /opt/mvnquery
