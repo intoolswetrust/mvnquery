@@ -1,0 +1,4 @@
+site_name: MvnQuery
+site_url: https://intoolswetrust.github.io/mvnquery
+theme:
+  name: material
