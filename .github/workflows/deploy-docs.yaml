@@ -1,4 +1,4 @@
-name: ci 
+name: MkDocs
 on:
   push:
     branches:
@@ -38,7 +38,7 @@ jobs:
           echo '# Command-Line Help' > docs/cli.md
           echo '' >> docs/cli.md
           echo '```text' >> docs/cli.md
-          java -jar mvnquery.jar --help >> docs/cli.md
+          java -jar mvnquery.jar --help >> docs/cli.md || true
           echo '```' >> docs/cli.md
 
       - run: mkdocs gh-deploy --force
