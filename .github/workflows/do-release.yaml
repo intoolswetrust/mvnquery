@@ -59,7 +59,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd
+      uses: svenstaro/upload-release-action@ebd922b779f285dafcac6410a0710daee9c12b82
       with:
         file: target/mvnquery.jar
         file_glob: true
