@@ -154,7 +154,7 @@ public class MvnQuery {
     private String getCoordinates(ArtifactInfo ai) {
         StringBuilder sb = new StringBuilder();
         sb.append(ai.getGroupId()).append(":").append(ai.getArtifactId()).append(":").append(ai.getVersion()).append(":")
-                .append(ai.getPackaging()).append(":").append(Objects.toString(ai.getClassifier(), ""));
+                .append(ai.getFileExtension()).append(":").append(Objects.toString(ai.getClassifier(), ""));
 
         if (config.isUseTimestamp()) {
             sb.append(":").append(formatTimestamp(ai.getLastModified()));
@@ -173,7 +173,7 @@ public class MvnQuery {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         addToQuery(builder, MAVEN.GROUP_ID, config.getGroupId());
         addToQuery(builder, MAVEN.ARTIFACT_ID, config.getArtifactId());
-        addToQuery(builder, MAVEN.PACKAGING, config.getPackaging());
+        addToQuery(builder, MAVEN.EXTENSION, config.getPackaging());
         addToQuery(builder, MAVEN.CLASSIFIER, config.getClassifier());
 
         int lastDays = config.getLastDays();
