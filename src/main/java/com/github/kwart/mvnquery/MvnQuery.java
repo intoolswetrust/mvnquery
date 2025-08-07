@@ -171,6 +171,9 @@ public class MvnQuery {
         log("Building the query");
 
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
+
+        builder.add(indexer.constructQuery(MAVEN.VERSION, new SourcedSearchExpression("*")), Occur.MUST);
+
         addToQuery(builder, MAVEN.GROUP_ID, config.getGroupId());
         addToQuery(builder, MAVEN.ARTIFACT_ID, config.getArtifactId());
         addToQuery(builder, MAVEN.EXTENSION, config.getPackaging());
