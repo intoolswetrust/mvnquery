@@ -16,7 +16,7 @@
         <exec.mainClass>com.github.kwart.mvnquery.MvnQuery</exec.mainClass>
         <version.slf4j>2.0.18</version.slf4j>
         <version.junit>6.1.0</version.junit>
-        <version.sisu>1.0.0</version.sisu>
+        <version.sisu>1.0.1</version.sisu>
     </properties>
 
     <build>
